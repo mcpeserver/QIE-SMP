@@ -27,6 +27,11 @@ export interface SiteConfig {
     name: string;
     whatsapp: string;
     portfolioUrl: string;
+    community?: {
+      name: string;
+      website: string;
+      discord: string;
+    };
   };
   prices: {
     ranks: {
@@ -65,7 +70,12 @@ export const siteConfig: SiteConfig = {
   developer: {
     name: "RAN DEV",
     whatsapp: "0895602592430",
-    portfolioUrl: "https://sfl.gl/x2ic"
+    portfolioUrl: "https://sfl.gl/x2ic",
+    community: {
+      name: "RAN DEV COMMUNITY",
+      website: "https://sfl.gl/x2ic",
+      discord: "https://discord.gg/qiesmp"
+    }
   },
   prices: {
     ranks: [

@@ -37,6 +37,42 @@ export default function App() {
   const [copiedPort, setCopiedPort] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Developer state with fallback from siteConfig
+  const [devData, setDevData] = useState({
+    name: siteConfig.developer.name,
+    phone: siteConfig.purchase.whatsappDisplay,
+    whatsapp: siteConfig.purchase.whatsappNumber,
+    portfolio: siteConfig.developer.portfolioUrl,
+    communityName: siteConfig.developer.community?.name || "RAN DEV COMMUNITY",
+    communityWebsite: siteConfig.developer.community?.website || "https://sfl.gl/x2ic",
+    communityDiscord: siteConfig.developer.community?.discord || "https://discord.gg/qiesmp"
+  });
+
+  // Fetch remote developer configuration from raw GitHub config
+  useEffect(() => {
+    fetch("https://raw.githubusercontent.com/mcpeserver/MyAPI/main/config.json")
+      .then((res) => {
+        if (!res.ok) throw new Error("Gagal mengambil data developer.");
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          setDevData({
+            name: data.name || siteConfig.developer.name,
+            phone: data.contact?.phone || siteConfig.purchase.whatsappDisplay,
+            whatsapp: data.contact?.whatsapp || siteConfig.purchase.whatsappNumber,
+            portfolio: data.website?.portfolio || siteConfig.developer.portfolioUrl,
+            communityName: data.community?.name || "RAN DEV COMMUNITY",
+            communityWebsite: data.community?.website || "https://sfl.gl/x2ic",
+            communityDiscord: data.community?.discord || "https://discord.gg/qiesmp"
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn("Menggunakan data fallback lokal:", err);
+      });
+  }, []);
+
   // Monitor scroll for header adjustments
   useEffect(() => {
     const handleScroll = () => {
@@ -73,34 +109,55 @@ export default function App() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full bg-[#0a1e12] border-b border-forest-light/40 py-2.5 px-4 text-xs z-50 sticky top-0 backdrop-blur-md shadow-md"
+        className="w-full bg-[#0a1e12] border-b border-forest-light/40 py-2 px-4 text-xs z-50 sticky top-0 backdrop-blur-md shadow-md"
       >
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-2 text-stone-300 font-mono">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-stone-300 font-mono text-center md:text-left">
             <span className="inline-block w-2 h-2 rounded-full bg-nature-emerald animate-pulse"></span>
-            <span>Developed by <strong className="text-nature-lime font-sans font-bold">RAN DEV</strong></span>
+            <span>Developed by <strong className="text-nature-lime font-sans font-bold">{devData.name}</strong></span>
             <span className="hidden sm:inline text-forest-light">|</span>
             <a 
-              href={`https://wa.me/${siteConfig.purchase.whatsappNumber}`} 
+              href={`https://wa.me/${devData.whatsapp}`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="hover:text-nature-lime transition-colors duration-200 flex items-center gap-1 font-sans font-medium"
             >
-              <Phone className="w-3.5 h-3.5" /> {siteConfig.purchase.whatsappDisplay}
+              <Phone className="w-3.5 h-3.5" /> {devData.phone}
             </a>
           </div>
           
-          {/* Custom portfolio link to view other servers */}
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-stone-400 sm:inline hidden">Tertarik membuat website server?</span>
+          {/* Custom links to view other servers and join community */}
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5">
+            <span className="text-[11px] text-stone-400 lg:inline hidden">Tertarik membuat website server?</span>
             <a 
-              href={siteConfig.developer.portfolioUrl}
+              href={devData.portfolio}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-gradient-to-r from-gold-coin to-amber-500 hover:from-amber-500 hover:to-gold-coin text-stone-900 font-bold px-3 py-1 rounded-full text-[11px] transition-all duration-300 flex items-center gap-1.5 shadow-md shadow-amber-500/10 hover:shadow-amber-500/20 group scale-95 active:scale-90"
+              className="bg-gradient-to-r from-gold-coin to-amber-500 hover:from-amber-500 hover:to-gold-coin text-stone-900 font-bold px-3 py-1 rounded-full text-[11px] transition-all duration-300 flex items-center gap-1 shadow-md shadow-amber-500/10 hover:shadow-amber-500/20 group scale-95 active:scale-90"
             >
-              <span>Lihat Server Lain</span>
-              <Globe className="w-3.5 h-3.5 animate-spin-slow group-hover:rotate-12 transition-transform" />
+              <span>Lihat Server Lain 🌐</span>
+            </a>
+            
+            <span className="text-forest-light hidden sm:inline">|</span>
+            
+            <a 
+              href={devData.communityWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-300 hover:text-nature-lime text-[11px] transition-colors flex items-center gap-1 font-medium bg-forest-medium/40 px-2.5 py-1 rounded-lg border border-forest-light/30"
+            >
+              <Users className="w-3 h-3 text-nature-emerald" />
+              <span>{devData.communityName}</span>
+            </a>
+
+            <a 
+              href={devData.communityDiscord}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-stone-300 hover:text-[#5865F2] text-[11px] transition-colors flex items-center gap-1 font-medium bg-forest-medium/40 px-2.5 py-1 rounded-lg border border-forest-light/30"
+            >
+              <Globe className="w-3 h-3 text-[#5865F2]" />
+              <span>Discord Dev</span>
             </a>
           </div>
         </div>
@@ -780,27 +837,49 @@ export default function App() {
             </div>
             
             {/* COMPLIANT DEVELOPER BANNER AS REQ */}
-            <div className="text-center md:text-right bg-forest-medium/20 py-2.5 px-4 rounded-xl border border-forest-light/30">
-              <p className="text-stone-300 font-sans">
-                Website dikembangkan oleh <strong className="text-nature-lime font-bold">RAN DEV</strong>
+            <div className="text-center md:text-right bg-forest-medium/20 py-3 px-5 rounded-2xl border border-forest-light/30">
+              <p className="text-stone-300 font-sans text-sm">
+                Website dikembangkan oleh <strong className="text-nature-lime font-bold">{devData.name}</strong>
               </p>
-              <div className="flex justify-center md:justify-end gap-3 mt-1 text-[11px]">
+              <div className="flex justify-center md:justify-end gap-3 mt-1.5 text-[11px]">
                 <a 
-                  href={`https://wa.me/${siteConfig.purchase.whatsappNumber}`} 
+                  href={`https://wa.me/${devData.whatsapp}`} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-stone-400 hover:text-white transition-colors"
                 >
-                  WhatsApp: {siteConfig.purchase.whatsappDisplay}
+                  WhatsApp: {devData.phone}
                 </a>
                 <span className="text-forest-light">•</span>
                 <a 
-                  href={siteConfig.developer.portfolioUrl}
+                  href={devData.portfolio}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gold-bright hover:underline"
                 >
                   Lihat Server Lain 🌐
+                </a>
+              </div>
+              
+              {/* Dynamic Developer Community links */}
+              <div className="flex justify-center md:justify-end gap-3 mt-2 pt-2 border-t border-forest-light/20 text-[11px] font-sans">
+                <a 
+                  href={devData.communityWebsite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-stone-400 hover:text-nature-lime transition-colors flex items-center gap-1"
+                >
+                  <Users className="w-3.5 h-3.5 text-nature-emerald" />
+                  <span>{devData.communityName}</span>
+                </a>
+                <span className="text-forest-light">•</span>
+                <a 
+                  href={devData.communityDiscord}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#5865F2] hover:underline"
+                >
+                  Discord Dev 🎮
                 </a>
               </div>
             </div>
